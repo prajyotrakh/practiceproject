@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    tools {
+        maven "maven1"
+    }
+
+    stages {
+        stage('Checkout code') {
+            steps {
+                // Get some code from a GitHub repository
+                git branch: 'main', credentialsId: 'git', url: 'https://github.com/prajyotrakh/practiceproject.git'
+            }
+        }
+        stage('Maven clean build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId:'docker', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh """
+                            docker login -u \$username -p \$password
+                        """
+                    }
+                }
+            }
+        }
+        stage("build the image"){
+            steps{
+                sh 'docker build -t javaprogram .'
+            }
+        }
+        stage('tagging image'){
+            steps{
+                sh 'docker tag javaprogram prajyotrakh/javaprogram:1.0'
+            }
+        }
+        stage('push the image'){
+            steps{
+                sh 'docker push prajyotrakh/javaprogram:1.0'
+            }
+        }
+    }
+}
