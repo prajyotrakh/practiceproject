@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: swiggyapp
+  name: swiggydeployment
+spec:
+  replicas: 3      
+  selector:
+    matchLabels:
+      app: swiggyapp
+  template:
+    metadata: 
+      labels:
+        app: swiggyapp
+    spec:
+      containers:
+        - name: cont1
+          image: prajyotrakh/registershop:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: swiggy-service
+spec:
+  selector:
+    app: swiggyapp
+  ports:
+    - protocol: TCP
+      port: 80     # Port exposed by the service within the cluster
+      targetPort: 80  # Port on the pod
+  type: NodePort   # Expose the service outside the cluster via a NodePort
